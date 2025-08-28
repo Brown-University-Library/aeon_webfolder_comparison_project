@@ -27,6 +27,7 @@ Compare two folders...
     - files that are different
     - files that are the same
 - [x] running that shouldoutput json for the above results, saving it to a datestamped file in a "diff" directory.
+ - [x] running that should output JSON for the above results, saving it to a datestamped file in a "diffed_dirs" directory.
 
 Compare two files...
 - [ ] create a test that will run `diff_files.py` on a pair of files that are the same, and verify that the output.json indicates they're the same.
@@ -35,6 +36,6 @@ Compare two files...
     ```
     uv run diff_files.py --old_file_path "foo" --new_file_path "bar" --output_dir_path "baz"
     ```
-- [ ] running that should output json for the above results, saving it to a datestamped file in a "diff" directory.
+- [ ] running that should output JSON for the above results, saving it to a datestamped file in a "diffed_files" directory.
 
 ---
