@@ -12,3 +12,19 @@ This repo will contain code for:
 - Running the file-pair comparison in a loop, and outputting json indicating a probability that each file is a customization or an upgrade, or a mix.
 
 ---
+
+
+## TODO
+
+- [ ] create `diff_folders.py` code that will be run via:
+    ```
+    uv run diff_folders.py --old_dir_path "foo" --new_dir_path "bar" --output_dir_path "baz"
+    
+- [ ] running that that should show:
+    - files in old that are not in new
+    - files in new that are not in old
+    - files that are different
+    - files that are the same
+- [ ] running that shouldoutput json for the above results, saving it to a datestamped file in a "diff" directory.
+    
+---
