@@ -3,12 +3,11 @@
 import json
 import pathlib
 import re
-
 import pandas as pd
 
 # %%
 ## loads input json
-in_path = pathlib.Path('/mnt/data/diff_all_real_data.json')
+in_path = pathlib.Path('../output_dir/diffed_files_combined/diff_all_real_data.json')
 with in_path.open('r', encoding='utf-8') as f:
     diff_payload = json.load(f)
 
@@ -230,7 +229,8 @@ df = (
 
 # %%
 ## saves csv
-csv_path = pathlib.Path('/mnt/data/aeon_diff_customization_assessment.csv')
+csv_path = pathlib.Path('../output_dir/aeon_diff_customization_assessment.csv')
+csv_path.parent.mkdir(parents=True, exist_ok=True)
 df.to_csv(csv_path, index=False)
 
 # %%
@@ -253,7 +253,8 @@ for _, row in df.iterrows():
 
 md_text = '\n'.join(md_lines)
 
-md_path = pathlib.Path('/mnt/data/aeon_diff_customization_assessment.md')
+md_path = pathlib.Path('../output_dir/aeon_diff_customization_assessment.md')
+md_path.parent.mkdir(parents=True, exist_ok=True)
 with md_path.open('w', encoding='utf-8') as f:
     f.write(md_text)
 
