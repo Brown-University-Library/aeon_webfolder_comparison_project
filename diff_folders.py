@@ -1,3 +1,32 @@
+"""
+Compares two directories recursively and writes a JSON summary of differences.
+
+Usage:
+  uv run diff_folders.py \
+    --old_dir_path "/path/to/old" \
+    --new_dir_path "/path/to/new" \
+    --output_dir_path "/absolute/path/to/output_dir"
+
+  example:
+    uv run diff_folders.py \
+      --old_dir_path "./test_files/test_diffs_directory/old_files" \
+      --new_dir_path "./test_files/test_diffs_directory/new_files" \
+      --output_dir_path "../output_dir"
+
+  output:
+    ```
+    Folder diff results:
+    - old_only: 1
+    - new_only: 1
+    - different: 2
+    - same: 1
+    Wrote JSON diff to: ../output_dir/diff/diff_20250827-214410.json
+    ```
+
+Environment:
+  LOG_LEVEL=[DEBUG|INFO]  (optional; defaults to INFO)
+"""
+
 import argparse
 import filecmp
 import json
@@ -94,7 +123,9 @@ def diff_directories(old_dir: Path, new_dir: Path) -> dict[str, list[str]]:
 
     Called by main().
     """
+    log.debug(f'collecting old_map from {old_dir.resolve()}')
     old_map: dict[str, Path] = collect_files(old_dir)
+    log.debug(f'collecting new_map from {new_dir.resolve()}')
     new_map: dict[str, Path] = collect_files(new_dir)
 
     old_keys: set[str] = set(old_map.keys())
