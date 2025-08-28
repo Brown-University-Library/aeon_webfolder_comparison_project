@@ -52,7 +52,7 @@ class TestDiffFoldersCase2(unittest.TestCase):
         result: dict[str, list[str]] = df.diff_directories(old_dir, new_dir)
 
         self.assertEqual(result['same'], ['x.txt'])
-        self.assertEqual(result['different'], [])
+        self.assertEqual(result['different'], ['w.txt'])
         self.assertEqual(result['old_only'], ['y.txt'])
         self.assertEqual(result['new_only'], ['z.txt'])
 
@@ -61,6 +61,9 @@ class TestDiffFoldersCase2(unittest.TestCase):
         self.assertTrue(out_path.exists())
         self.assertTrue(out_path.name.startswith('diff_'))
         self.assertTrue(out_path.suffix == '.json')
+        with out_path.open() as f:
+            data: dict[str, list[str]] = json.load(f)
+        self.assertIn('w.txt', data['different'])
 
 
 if __name__ == '__main__':
