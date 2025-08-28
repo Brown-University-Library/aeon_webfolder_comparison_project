@@ -31,7 +31,7 @@ class TestDiffFoldersCombined(unittest.TestCase):
 
         # Expected contents
         self.assertEqual(result['same'], ['a.txt'])
-        self.assertEqual(result['different'], ['w.txt'])
+        self.assertEqual(result['different'], ['sub/c.txt', 'w.txt'])
         self.assertEqual(result['old_only'], ['y.txt'])
         self.assertEqual(result['new_only'], ['z.txt'])
 
@@ -43,7 +43,7 @@ class TestDiffFoldersCombined(unittest.TestCase):
         with out_path.open() as f:
             data: dict[str, list[str]] = json.load(f)
         self.assertEqual(data['same'], ['a.txt'])
-        self.assertIn('w.txt', data['different'])
+        self.assertEqual(data['different'], ['sub/c.txt', 'w.txt'])
 
 
 if __name__ == '__main__':
