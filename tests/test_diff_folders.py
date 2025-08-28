@@ -1,15 +1,19 @@
 """
- Tests directory diff behavior and JSON output.
+Tests directory diff behavior and JSON output.
 
- Usage:
-  uv run -m unittest discover -v -s tests -p 'test_*\.py'
-  or: uv run -m unittest --verbose discover --start-directory tests --pattern 'test_*\.py'
- """
+Usage:
+ uv run -m unittest discover -v -s tests -p 'test_*\.py'
+ ...or:
+ uv run -m unittest --verbose discover --start-directory tests --pattern 'test_*\.py'
+
+The "discover" option means "discover and run all tests in the 'tests' directory and its subdirectories."
+"""
+
 import json
+import types
 import unittest
 from importlib import import_module
 from pathlib import Path
-import types
 
 # Import the module under test
 module_path = 'diff_folders'
