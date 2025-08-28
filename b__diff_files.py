@@ -2,13 +2,13 @@
 Compares two files and writes a JSON summary of whether they are the same or different.
 
 Usage:
-  uv run diff_files.py \
+  uv run b__diff_files.py \
     --old_file_path "/path/to/old.txt" \
     --new_file_path "/path/to/new.txt" \
     --output_dir_path "/absolute/path/to/output_dir"
 
     Example:
-    uv run diff_files.py \
+    uv run b__diff_files.py \
         --old_file_path "./test_files/test_file_diffs/old_files/multihunk2.txt" \
         --new_file_path "./test_files/test_file_diffs/new_files/multihunk2.txt" \
         --output_dir_path "../output_dir"

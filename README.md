@@ -29,11 +29,11 @@ Compare two folders...
  - [x] running that should output JSON for the above results, saving it to a datestamped file in a "diffed_dirs" directory.
 
 Compare two files...
-- [ ] create a test that will run `diff_files.py` on a pair of files that are the same, and verify that the output.json indicates they're the same.
-- [ ] create a test that will run `diff_files.py` on a pair of files that are different, and verify that the output.json indicates they're different.
-- [ ] create `diff_files.py` code that will be run via:
+- [ ] create a test that will run `b__diff_files.py` on a pair of files that are the same, and verify that the output.json indicates they're the same.
+- [ ] create a test that will run `b__diff_files.py` on a pair of files that are different, and verify that the output.json indicates they're different.
+- [ ] create `b__diff_files.py` code that will be run via:
     ```
-    uv run diff_files.py --old_file_path "foo" --new_file_path "bar" --output_dir_path "baz"
+    uv run b__diff_files.py --old_file_path "foo" --new_file_path "bar" --output_dir_path "baz"
     ```
 - [ ] running that should output JSON for the above results, saving it to a datestamped file in a "diffed_files" directory.
 

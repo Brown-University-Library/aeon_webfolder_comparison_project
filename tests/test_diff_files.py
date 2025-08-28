@@ -51,7 +51,7 @@ class TestDiffFilesCLIIdentical(unittest.TestCase):
         cmd: list[str] = [
             'uv',
             'run',
-            str(PROJECT_ROOT / 'diff_files.py'),
+            str(PROJECT_ROOT / 'b__diff_files.py'),
             '--old_file_path',
             str(old_file),
             '--new_file_path',
@@ -101,7 +101,7 @@ class TestDiffFilesCLIIdentical(unittest.TestCase):
         cmd: list[str] = [
             'uv',
             'run',
-            str(PROJECT_ROOT / 'diff_files.py'),
+            str(PROJECT_ROOT / 'b__diff_files.py'),
             '--old_file_path',
             str(old_file),
             '--new_file_path',
@@ -136,7 +136,7 @@ class TestDiffFilesCLIIdentical(unittest.TestCase):
         cmd: list[str] = [
             'uv',
             'run',
-            str(PROJECT_ROOT / 'diff_files.py'),
+            str(PROJECT_ROOT / 'b__diff_files.py'),
             '--old_file_path',
             str(old_file),
             '--new_file_path',
