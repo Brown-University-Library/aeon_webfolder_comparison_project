@@ -18,7 +18,7 @@ def _configure_logging() -> None:
     Called by main().
     """
     LOG_LEVEL: str = os.environ.get('LOG_LEVEL', 'INFO')
-    level_dict = {
+    level_dict: dict[str, int] = {
         'DEBUG': logging.DEBUG,
         'INFO': logging.INFO,
     }
@@ -113,7 +113,7 @@ def diff_directories(old_dir: Path, new_dir: Path) -> dict[str, list[str]]:
     }
 
 
-def write_json_output(output_dir: Path, data: dict) -> Path:
+def write_json_output(output_dir: Path, data: dict[str, list[str]]) -> Path:
     """
     Writes diff results to a timestamped JSON file under output_dir/diff/.
 
