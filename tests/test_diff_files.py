@@ -9,8 +9,6 @@ Usage:
 The "discover" option means "discover and run all tests in the 'tests' directory and its subdirectories."
 """
 
-from __future__ import annotations
-
 import json
 import subprocess
 import tempfile
@@ -29,17 +27,10 @@ class TestDiffFilesCLIIdentical(unittest.TestCase):
 
     def setUp(self) -> None:
         """
-        Ensures the output directory exists and clears stale diff JSONs for deterministic checks.
+        Ensures the output directory exists for test writes.
         """
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         DIFF_DIR.mkdir(parents=True, exist_ok=True)
-        # Remove any pre-existing JSONs so we only see files created by this test run
-        for p in DIFF_DIR.glob('diff_*.json'):
-            try:
-                p.unlink()
-            except OSError:
-                # If removal fails, continue; test will assert on fresh creation anyway
-                pass
 
     def _latest_json(self) -> Path | None:
         """
@@ -63,20 +54,30 @@ class TestDiffFilesCLIIdentical(unittest.TestCase):
             new_file.write_text(content, encoding='utf-8')
 
             cmd: list[str] = [
-                'uv', 'run', str(PROJECT_ROOT / 'diff_files.py'),
-                '--old_file_path', str(old_file),
-                '--new_file_path', str(new_file),
-                '--output_dir_path', str(OUTPUT_DIR),
+                'uv',
+                'run',
+                str(PROJECT_ROOT / 'diff_files.py'),
+                '--old_file_path',
+                str(old_file),
+                '--new_file_path',
+                str(new_file),
+                '--output_dir_path',
+                str(OUTPUT_DIR),
             ]
             # Intentionally allow failure until diff_files.py is implemented
             proc = subprocess.run(cmd, capture_output=True, text=True)
 
-            # Inspect latest JSON output
-            latest: Path | None = self._latest_json()
-            self.assertIsNotNone(latest, msg=f'No JSON written. stdout=\n{proc.stdout}\n\nstderr=\n{proc.stderr}')
-            assert latest is not None  # for type checker
+            # Expect stdout to be JSON containing an 'output_path' to the written JSON
+            try:
+                stdout_json: dict[str, object] = json.loads(proc.stdout)
+            except Exception as exc:  # noqa: BLE001
+                self.fail(f'Expected JSON on stdout but got:\n{proc.stdout}\n\nstderr=\n{proc.stderr}\nError: {exc}')
 
-            with latest.open('r', encoding='utf-8') as fh:
+            self.assertIn('output_path', stdout_json)
+            output_path = Path(str(stdout_json['output_path']))
+            self.assertTrue(output_path.exists(), msg=f'Output path does not exist: {output_path}')
+
+            with output_path.open('r', encoding='utf-8') as fh:
                 data: dict[str, object] = json.load(fh)
 
             # Basic schema checks (proposed contract for diff_files.py)
