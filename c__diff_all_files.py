@@ -29,6 +29,7 @@ import argparse
 import json
 import logging
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -97,6 +98,14 @@ def _assemble_output_path(output_json_path: Path) -> Path:
     if output_json_path.suffix.lower() != '.json':
         timestamp: str = datetime.now().strftime('%Y%m%d-%H%M%S')
         output_json_path = output_json_path / f'diff_all_{timestamp}.json'
+    else:
+        # Path ends with .json. If the filename does not appear to contain a timestamp,
+        # append one before the extension: foo.json -> foo_YYYYMMDD-HHMMSS.json
+        # Timestamp pattern used elsewhere: YYYYMMDD-HHMMSS
+        name_has_ts: bool = bool(re.search(r"\d{8}-\d{6}", output_json_path.stem))
+        if not name_has_ts:
+            timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+            output_json_path = output_json_path.with_name(f"{output_json_path.stem}_{timestamp}{output_json_path.suffix}")
 
     output_json_path.parent.mkdir(parents=True, exist_ok=True)
     return output_json_path
