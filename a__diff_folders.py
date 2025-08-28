@@ -2,13 +2,13 @@
 Compares two directories recursively and writes a JSON summary of differences.
 
 Usage:
-  uv run diff_folders.py \
+  uv run a__diff_folders.py \
     --old_dir_path "/path/to/old" \
     --new_dir_path "/path/to/new" \
     --output_dir_path "/absolute/path/to/output_dir"
 
   example:
-    uv run diff_folders.py \
+    uv run a__diff_folders.py \
       --old_dir_path "./test_files/test_directory_diffs/old_files" \
       --new_dir_path "./test_files/test_directory_diffs/new_files" \
       --output_dir_path "../output_dir"

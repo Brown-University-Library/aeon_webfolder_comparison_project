@@ -13,13 +13,12 @@ This repo will contain code for:
 
 ---
 
-
 ## TODO
 
 Compare two folders...
-- [x] create `diff_folders.py` code that will be run via:
+- [x] create `a__diff_folders.py` code that will be run via:
     ```
-    uv run diff_folders.py --old_dir_path "foo" --new_dir_path "bar" --output_dir_path "baz"
+    uv run a__diff_folders.py --old_dir_path "foo" --new_dir_path "bar" --output_dir_path "baz"
     ```
 - [x] running that that should show:
     - files in old that are not in new

@@ -16,7 +16,7 @@ from importlib import import_module
 from pathlib import Path
 
 # Import the module under test
-module_path = 'diff_folders'
+module_path = 'a__diff_folders'
 df: types.ModuleType = import_module(module_path)
 
 PROJECT_ROOT: Path = Path(__file__).resolve().parents[1]
