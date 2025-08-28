@@ -46,7 +46,8 @@ Diff all files...
     This code should 
     - load the `directory_diff_file_path` json file, then 
     - loop over each file in the `different` list, and run `b__diff_files.py` on each file pair, then 
-    - output the results to the `output_json_path` json file.
+    - assemble the results from each of the diffed-files into a single json file, then 
+    - output the big list of results to the `output_json_path` json file.
 - [ ] running that should output a JSON file for the above results, saving it to a datestamped file in a "diffed_files_combined" directory.
 ---
 
