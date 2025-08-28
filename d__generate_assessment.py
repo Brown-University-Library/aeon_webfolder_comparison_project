@@ -1,9 +1,37 @@
+"""
+Generates an assessment of the changes between two versions of the Aeon web folder.
+
+From ChatGPT-5-thinking...
+
+```
+How I scored “probability_of_customization”
+
+Heuristics favor local/Brown-specific text (e.g., “JHL”, “John Hay”, “BruKnow”,
+“library.brown.edu”, “Brown Digital Repository”) showing up in
+removed/changed lines → pushes the score up (more likely a prior
+customization).
+
+Signals that look like upstream Aeon defaults/features added (e.g.,
+transaction-label, include_scheduled_date.html, EADRequest.min.js, “Aeon - …”
+titles, date/ISO8601 helpers, removal of hidden Username) push the score down
+(more likely vendor upgrade adjustments).
+
+Notes call out the strongest signals (e.g., “title change”, “removed local
+terms: …”, “adds include_scheduled_date partial”, “switch to minified
+EADRequest.min.js”, etc.).
+```
+
+Usage:
+- `uv run ./d__generate_assessment.py`
+"""
+
 # %%
 ## loads libs
 import json
 import pathlib
 import re
 from datetime import datetime
+
 import pandas as pd
 
 # %%
@@ -173,15 +201,19 @@ def display_dataframe_to_user(title: str, df: pd.DataFrame, max_rows: int = 50) 
     Displays the dataframe in Jupyter when available; otherwise prints a truncated text view.
     """
     try:
-        from IPython.display import display, Markdown  # type: ignore
-        display(Markdown(f"### {title}"))
+        from IPython.display import Markdown, display  # type: ignore
+
+        display(Markdown(f'### {title}'))
         display(df)
     except Exception:
-        print(f"\n=== {title} ===")
+        print(f'\n=== {title} ===')
         with pd.option_context(
-            "display.max_rows", max_rows,
-            "display.max_columns", None,
-            "display.width", 120,
+            'display.max_rows',
+            max_rows,
+            'display.max_columns',
+            None,
+            'display.width',
+            120,
         ):
             print(df)
 
@@ -231,7 +263,7 @@ df = (
 # %%
 ## saves csv
 timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
-csv_path = pathlib.Path(f"../output_dir/aeon_diff_customization_assessment_{timestamp}.csv")
+csv_path = pathlib.Path(f'../output_dir/aeon_diff_customization_assessment_{timestamp}.csv')
 csv_path.parent.mkdir(parents=True, exist_ok=True)
 df.to_csv(csv_path, index=False)
 
@@ -255,7 +287,7 @@ for _, row in df.iterrows():
 
 md_text = '\n'.join(md_lines)
 
-md_path = pathlib.Path(f"../output_dir/aeon_diff_customization_assessment_{timestamp}.md")
+md_path = pathlib.Path(f'../output_dir/aeon_diff_customization_assessment_{timestamp}.md')
 md_path.parent.mkdir(parents=True, exist_ok=True)
 with md_path.open('w', encoding='utf-8') as f:
     f.write(md_text)
