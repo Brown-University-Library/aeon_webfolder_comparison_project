@@ -13,9 +13,7 @@ Output (stdout):
 Environment:
   LOG_LEVEL=[DEBUG|INFO]  (optional; defaults to INFO)
 """
-
-from __future__ import annotations
-
+ 
 import argparse
 import filecmp
 import json
