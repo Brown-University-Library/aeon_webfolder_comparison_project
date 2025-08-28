@@ -140,7 +140,7 @@ def write_json_output(output_dir: Path, result: dict[str, object], old_file: Pat
 
     Called by main().
     """
-    timestamp: str = datetime.now().strftime('%Y%m%d-%H%M%S')
+    timestamp: str = datetime.now().strftime('%Y%m%d-%H%M%S-%f')
     diff_dir: Path = output_dir / 'diffed_files'
     diff_dir.mkdir(parents=True, exist_ok=True)
     out_path: Path = diff_dir / f'diff_{timestamp}.json'
