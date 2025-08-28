@@ -1,9 +1,20 @@
 import argparse
 import filecmp
 import json
+import logging
 import os
+import pprint
 from datetime import datetime
 from pathlib import Path
+
+## setup logging ----------------------------------------------------
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
+    datefmt='%d/%b/%Y %H:%M:%S',
+)
+log: logging.Logger = logging.getLogger(__name__)
+log.debug('starting log')
 
 
 def collect_files(base_dir: Path) -> dict[str, Path]:
@@ -19,6 +30,7 @@ def collect_files(base_dir: Path) -> dict[str, Path]:
             abs_path: Path = root_path / fname
             rel_path: str = abs_path.relative_to(base_dir).as_posix()
             mapping[rel_path] = abs_path
+    log.debug(f'mapping, ``{pprint.pformat(mapping)}``')
     return mapping
 
 
@@ -37,13 +49,13 @@ def compare_common_files(old_map: dict[str, Path], new_map: dict[str, Path]) -> 
         old_file: Path = old_map[key]
         new_file: Path = new_map[key]
         try:
-            # filecmp.cmp with shallow=False compares file content
+            ## filecmp.cmp with shallow=False compares file content
             if filecmp.cmp(old_file, new_file, shallow=False):
                 same.append(key)
             else:
                 different.append(key)
         except OSError:
-            # If either file can't be read, consider it different and proceed
+            ## If either file can't be read, consider it different and proceed
             different.append(key)
     return same, different
 
