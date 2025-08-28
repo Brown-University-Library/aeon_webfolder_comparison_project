@@ -19,7 +19,7 @@ from pathlib import Path
 
 PROJECT_ROOT: Path = Path(__file__).resolve().parents[1]
 OUTPUT_DIR: Path = (PROJECT_ROOT.parent / 'output_dir').resolve()
-DIFF_DIR: Path = OUTPUT_DIR / 'diff'
+DIFF_DIR: Path = OUTPUT_DIR / 'diffed_files'
 
 
 class TestDiffFilesCLIIdentical(unittest.TestCase):
