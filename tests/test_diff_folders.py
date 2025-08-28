@@ -2,9 +2,9 @@
 Tests directory diff behavior and JSON output.
 
 Usage:
- uv run -m unittest discover -v -s tests -p 'test_*\.py'
+ uv run -m unittest discover -v -s tests -p 'test_*.py'
  ...or:
- uv run -m unittest discover --verbose --start-directory tests --pattern 'test_*\.py'
+ uv run -m unittest discover --verbose --start-directory tests --pattern 'test_*.py'
 
 The "discover" option means "discover and run all tests in the 'tests' directory and its subdirectories."
 """
