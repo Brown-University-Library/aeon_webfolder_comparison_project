@@ -20,7 +20,7 @@ module_path = 'diff_folders'
 df: types.ModuleType = import_module(module_path)
 
 PROJECT_ROOT: Path = Path(__file__).resolve().parents[1]
-TEST_ROOT: Path = (PROJECT_ROOT / 'test_files' / 'test_diffs_directory').resolve()
+TEST_ROOT: Path = (PROJECT_ROOT / 'test_files' / 'test_directory_diffs').resolve()
 OUTPUT_DIR: Path = (PROJECT_ROOT.parent / 'output_dir').resolve()
 
 

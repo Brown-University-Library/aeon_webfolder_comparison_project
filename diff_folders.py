@@ -9,8 +9,8 @@ Usage:
 
   example:
     uv run diff_folders.py \
-      --old_dir_path "./test_files/test_diffs_directory/old_files" \
-      --new_dir_path "./test_files/test_diffs_directory/new_files" \
+      --old_dir_path "./test_files/test_directory_diffs/old_files" \
+      --new_dir_path "./test_files/test_directory_diffs/new_files" \
       --output_dir_path "../output_dir"
 
   output:
