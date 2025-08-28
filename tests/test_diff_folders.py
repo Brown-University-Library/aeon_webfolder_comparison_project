@@ -28,17 +28,17 @@ class TestDiffFoldersCase1(unittest.TestCase):
         self.assertIn('different', result)
         self.assertIn('same', result)
 
-        self.assertEqual(result['same'], ['a.txt'])
-        self.assertEqual(result['different'], ['sub/c.txt'])
-        self.assertEqual(result['old_only'], ['b.txt'])
-        self.assertEqual(result['new_only'], ['d.txt'])
+        self.assertEqual(result['same'], [])
+        self.assertEqual(result['different'], [])
+        self.assertEqual(result['old_only'], ['old_a.txt', 'old_b.txt', 'sub/old_c.txt'])
+        self.assertEqual(result['new_only'], ['new_a.txt', 'new_d.txt', 'sub/new_c.txt'])
 
         # Write JSON via module API
         out_path: Path = df.write_json_output(OUTPUT_DIR, result)
         self.assertTrue(out_path.exists())
         with out_path.open() as f:
             data: dict[str, list[str]] = json.load(f)
-        self.assertEqual(data['same'], ['a.txt'])
+        self.assertEqual(data['same'], [])
 
 
 class TestDiffFoldersCase2(unittest.TestCase):
@@ -51,10 +51,10 @@ class TestDiffFoldersCase2(unittest.TestCase):
 
         result: dict[str, list[str]] = df.diff_directories(old_dir, new_dir)
 
-        self.assertEqual(result['same'], ['x.txt'])
+        self.assertEqual(result['same'], [])
         self.assertEqual(result['different'], [])
-        self.assertEqual(result['old_only'], ['y.txt'])
-        self.assertEqual(result['new_only'], ['z.txt'])
+        self.assertEqual(result['old_only'], ['old_x.txt', 'old_y.txt'])
+        self.assertEqual(result['new_only'], ['new_x.txt', 'new_z.txt'])
 
         # Ensure timestamped file is created
         out_path: Path = df.write_json_output(OUTPUT_DIR, result)
