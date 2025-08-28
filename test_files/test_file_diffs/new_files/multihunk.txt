@@ -1,0 +1,12 @@
+line 1: unchanged
+line 2: unchanged
+line 3: NEW change A
+line 4: unchanged
+line 5: unchanged
+line 6: unchanged
+line 7: unchanged
+line 8: unchanged
+line 9: unchanged
+line 10: NEW change B
+line 11: unchanged
+line 12: unchanged

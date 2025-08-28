@@ -49,10 +49,13 @@ def _configure_logging() -> None:
 
 def compare_files(old_file: Path, new_file: Path) -> dict[str, object]:
     """
-    Compares two files and returns a result mapping with same/different flags.
+    Compares two files and returns a result mapping with a sameness flag and diff hunks.
 
     Returns a dict like:
-      {"same": bool, "different": bool}
+      {
+        "same": bool,
+        "unified_diff_hunks": list[list[str]]  # each inner list is a unified-diff hunk (starts with '@@')
+      }
 
     Called by main().
     """
@@ -61,9 +64,57 @@ def compare_files(old_file: Path, new_file: Path) -> dict[str, object]:
     except OSError:
         # If either file can't be read, consider them different
         are_same = False
+
+    if are_same:
+        return {
+            'same': True,
+            'unified_diff_hunks': [],
+        }
+
+    # Compute unified diff when content differs
+    try:
+        old_lines: list[str] = old_file.read_text(encoding='utf-8', errors='replace').splitlines(keepends=True)
+    except Exception:
+        old_lines = []
+    try:
+        new_lines: list[str] = new_file.read_text(encoding='utf-8', errors='replace').splitlines(keepends=True)
+    except Exception:
+        new_lines = []
+
+    import difflib
+
+    diff_lines: list[str] = list(
+        difflib.unified_diff(
+            old_lines,
+            new_lines,
+            fromfile=str(old_file),
+            tofile=str(new_file),
+            lineterm='',
+        )
+    )
+    # Parse into hunks: split on lines starting with '@@'
+    hunks: list[list[str]] = []
+    current: list[str] = []
+    for line in diff_lines:
+        if line.startswith('--- ') or line.startswith('+++ '):
+            # skip file header; we already expose file paths separately
+            continue
+        if line.startswith('@@ '):
+            if current:
+                hunks.append(current)
+            current = [line]
+        else:
+            if current:
+                current.append(line)
+            else:
+                # If diff starts without '@@' (unlikely), start a hunk anyway
+                current = [line]
+    if current:
+        hunks.append(current)
+
     return {
-        'same': are_same,
-        'different': not are_same,
+        'same': False,
+        'unified_diff_hunks': hunks,
     }
 
 
@@ -74,7 +125,7 @@ def write_json_output(output_dir: Path, result: dict[str, object], old_file: Pat
     Structure:
       {
         "comparison_files": {"old_file": "...", "new_file": "..."},
-        "results": {"same": bool, "different": bool}
+        "results": {"same": bool, "unified_diff_hunks": [["@@ ...", "+added", "-removed", " context"], ...]}
       }
 
     Called by main().

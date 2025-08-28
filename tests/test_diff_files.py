@@ -75,7 +75,7 @@ class TestDiffFilesCLIIdentical(unittest.TestCase):
         with output_path.open('r', encoding='utf-8') as fh:
             data: dict[str, object] = json.load(fh)
 
-        # Basic schema checks (proposed contract for diff_files.py)
+        # Basic schema checks (contract for diff_files.py)
         self.assertIn('comparison_files', data)
         self.assertIn('results', data)
 
@@ -86,9 +86,78 @@ class TestDiffFilesCLIIdentical(unittest.TestCase):
         results: dict[str, object] = data['results']  # type: ignore[assignment]
         # Expectation for identical content
         self.assertIn('same', results)
-        self.assertIn('different', results)
+        self.assertIn('unified_diff_hunks', results)
         self.assertTrue(bool(results['same']))
-        self.assertFalse(bool(results['different']))
+        self.assertEqual(results['unified_diff_hunks'], [])
+
+
+    def test_cli_reports_different_for_different_files(self) -> None:
+        """
+        Uses fixtures with differences and asserts same is False and at least one hunk exists.
+        """
+        old_file: Path = PROJECT_ROOT / 'test_files' / 'test_file_diffs' / 'old_files' / 'different.txt'
+        new_file: Path = PROJECT_ROOT / 'test_files' / 'test_file_diffs' / 'new_files' / 'different.txt'
+
+        cmd: list[str] = [
+            'uv',
+            'run',
+            str(PROJECT_ROOT / 'diff_files.py'),
+            '--old_file_path',
+            str(old_file),
+            '--new_file_path',
+            str(new_file),
+            '--output_dir_path',
+            str(OUTPUT_DIR),
+        ]
+        proc = subprocess.run(cmd, capture_output=True, text=True)
+        try:
+            stdout_json: dict[str, object] = json.loads(proc.stdout)
+        except Exception as exc:  # noqa: BLE001
+            self.fail(f'Expected JSON on stdout but got:\n{proc.stdout}\n\nstderr=\n{proc.stderr}\nError: {exc}')
+
+        output_path = Path(str(stdout_json['output_path']))
+        with output_path.open('r', encoding='utf-8') as fh:
+            data: dict[str, object] = json.load(fh)
+
+        results: dict[str, object] = data['results']  # type: ignore[assignment]
+        self.assertIn('same', results)
+        self.assertIn('unified_diff_hunks', results)
+        self.assertFalse(bool(results['same']))
+        self.assertGreaterEqual(len(results['unified_diff_hunks']), 1)
+
+
+    def test_cli_reports_multiple_hunks_when_multiple_sections_differ(self) -> None:
+        """
+        Uses multihunk fixtures and asserts at least two diff hunks are returned.
+        """
+        old_file: Path = PROJECT_ROOT / 'test_files' / 'test_file_diffs' / 'old_files' / 'multihunk2.txt'
+        new_file: Path = PROJECT_ROOT / 'test_files' / 'test_file_diffs' / 'new_files' / 'multihunk2.txt'
+
+        cmd: list[str] = [
+            'uv',
+            'run',
+            str(PROJECT_ROOT / 'diff_files.py'),
+            '--old_file_path',
+            str(old_file),
+            '--new_file_path',
+            str(new_file),
+            '--output_dir_path',
+            str(OUTPUT_DIR),
+        ]
+        proc = subprocess.run(cmd, capture_output=True, text=True)
+        try:
+            stdout_json: dict[str, object] = json.loads(proc.stdout)
+        except Exception as exc:  # noqa: BLE001
+            self.fail(f'Expected JSON on stdout but got:\n{proc.stdout}\n\nstderr=\n{proc.stderr}\nError: {exc}')
+
+        output_path = Path(str(stdout_json['output_path']))
+        with output_path.open('r', encoding='utf-8') as fh:
+            data: dict[str, object] = json.load(fh)
+
+        results: dict[str, object] = data['results']  # type: ignore[assignment]
+        self.assertFalse(bool(results['same']))
+        self.assertIn('unified_diff_hunks', results)
+        self.assertGreaterEqual(len(results['unified_diff_hunks']), 2)
 
 
 if __name__ == '__main__':

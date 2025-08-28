@@ -1,0 +1,32 @@
+line 1: unchanged
+line 2: unchanged
+line 3: OLD change A
+line 4: unchanged
+line 5: unchanged
+line 6: unchanged
+line 7: unchanged
+line 8: unchanged
+line 9: unchanged
+line 10: unchanged
+line 11: unchanged
+line 12: unchanged
+line 13: unchanged
+line 14: unchanged
+line 15: unchanged
+line 16: unchanged
+line 17: unchanged
+line 18: unchanged
+line 19: unchanged
+line 20: unchanged
+line 21: unchanged
+line 22: unchanged
+line 23: unchanged
+line 24: unchanged
+line 25: unchanged
+line 26: unchanged
+line 27: unchanged
+line 28: unchanged
+line 29: unchanged
+line 30: OLD change B
+line 31: unchanged
+line 32: unchanged
