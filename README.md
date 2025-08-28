@@ -26,7 +26,7 @@ Compare two folders...
     - files in new that are not in old
     - files that are different
     - files that are the same
-- [x] running that shouldoutput json for the above results, saving it to a datestamped file in a "diff" directory.
+- [x] running that should output json for the above results, saving it to a datestamped file in a "diff" directory.
  - [x] running that should output JSON for the above results, saving it to a datestamped file in a "diffed_dirs" directory.
 
 Compare two files...
