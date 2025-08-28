@@ -14,10 +14,10 @@ def collect_files(base_dir: Path) -> dict[str, Path]:
     base_dir = base_dir.resolve()
     mapping: dict[str, Path] = {}
     for root, _dirs, files in os.walk(base_dir):
-        root_path = Path(root)
+        root_path: Path = Path(root)
         for fname in files:
-            abs_path = root_path / fname
-            rel_path = abs_path.relative_to(base_dir).as_posix()
+            abs_path: Path = root_path / fname
+            rel_path: str = abs_path.relative_to(base_dir).as_posix()
             mapping[rel_path] = abs_path
     return mapping
 
@@ -32,10 +32,10 @@ def compare_common_files(old_map: dict[str, Path], new_map: dict[str, Path]) -> 
     same: list[str] = []
     different: list[str] = []
 
-    common_keys = old_map.keys() & new_map.keys()
+    common_keys: set[str] = old_map.keys() & new_map.keys()
     for key in sorted(common_keys):
-        old_file = old_map[key]
-        new_file = new_map[key]
+        old_file: Path = old_map[key]
+        new_file: Path = new_map[key]
         try:
             # filecmp.cmp with shallow=False compares file content
             if filecmp.cmp(old_file, new_file, shallow=False):
@@ -63,14 +63,14 @@ def diff_directories(old_dir: Path, new_dir: Path) -> dict[str, list[str]]:
         - 'different': files present in both but with different content
         - 'same': files present in both with identical content
     """
-    old_map = collect_files(old_dir)
-    new_map = collect_files(new_dir)
+    old_map: dict[str, Path] = collect_files(old_dir)
+    new_map: dict[str, Path] = collect_files(new_dir)
 
-    old_keys = set(old_map.keys())
-    new_keys = set(new_map.keys())
+    old_keys: set[str] = set(old_map.keys())
+    new_keys: set[str] = set(new_map.keys())
 
-    old_only = sorted(list(old_keys - new_keys))
-    new_only = sorted(list(new_keys - old_keys))
+    old_only: list[str] = sorted(list(old_keys - new_keys))
+    new_only: list[str] = sorted(list(new_keys - old_keys))
 
     same, different = compare_common_files(old_map, new_map)
 
@@ -93,10 +93,10 @@ def write_json_output(output_dir: Path, data: dict) -> Path:
     Returns:
         The path to the written JSON file.
     """
-    timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
-    diff_dir = output_dir / 'diff'
+    timestamp: str = datetime.now().strftime('%Y%m%d-%H%M%S')
+    diff_dir: Path = output_dir / 'diff'
     diff_dir.mkdir(parents=True, exist_ok=True)
-    out_path = diff_dir / f'diff_{timestamp}.json'
+    out_path: Path = diff_dir / f'diff_{timestamp}.json'
     with out_path.open('w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
     return out_path
@@ -117,7 +117,7 @@ def parse_args() -> argparse.Namespace:
     """
     Parses and returns CLI arguments for directory comparison.
     """
-    parser = argparse.ArgumentParser(
+    parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description=('Compare two directories (old vs new) and output a JSON summary of file differences.')
     )
     parser.add_argument(
@@ -143,24 +143,24 @@ def main() -> None:
     """
     Runs diff, prints summary, and writes JSON output.
     """
-    args = parse_args()
+    args: argparse.Namespace = parse_args()
 
-    old_dir = Path(args.old_dir_path)
-    new_dir = Path(args.new_dir_path)
-    output_dir = Path(args.output_dir_path)
+    old_dir: Path = Path(args.old_dir_path)
+    new_dir: Path = Path(args.new_dir_path)
+    output_dir: Path = Path(args.output_dir_path)
 
     if not old_dir.is_dir():
         raise SystemExit(f'old_dir_path is not a directory: {old_dir}')
     if not new_dir.is_dir():
         raise SystemExit(f'new_dir_path is not a directory: {new_dir}')
 
-    result = diff_directories(old_dir, new_dir)
+    result: dict[str, list[str]] = diff_directories(old_dir, new_dir)
 
     # Print summary to stdout
     print_summary(result)
 
     # Write JSON to timestamped file
-    out_path = write_json_output(output_dir, result)
+    out_path: Path = write_json_output(output_dir, result)
     print(f'Wrote JSON diff to: {out_path}')
 
 
