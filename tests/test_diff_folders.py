@@ -47,14 +47,26 @@ class TestDiffFoldersCombined(unittest.TestCase):
         self.assertEqual(result['new_only'], ['z.txt'])
 
         # JSON output check
-        out_path: Path = df.write_json_output(OUTPUT_DIR, result)
+        out_path: Path = df.write_json_output(OUTPUT_DIR, result, old_dir, new_dir)
         self.assertTrue(out_path.exists())
         self.assertTrue(out_path.name.startswith('diff_'))
         self.assertEqual(out_path.suffix, '.json')
         with out_path.open() as f:
-            data: dict[str, list[str]] = json.load(f)
-        self.assertEqual(data['same'], ['a.txt'])
-        self.assertEqual(data['different'], ['sub/c.txt', 'w.txt'])
+            data: dict[str, object] = json.load(f)
+
+        # Top-level keys
+        self.assertIn('comparison_directories', data)
+        self.assertIn('results', data)
+
+        # Directory paths
+        comp_dirs: dict[str, str] = data['comparison_directories']  # type: ignore[assignment]
+        self.assertEqual(comp_dirs['old_dir'], str(old_dir.resolve()))
+        self.assertEqual(comp_dirs['new_dir'], str(new_dir.resolve()))
+
+        # Results content
+        results: dict[str, list[str]] = data['results']  # type: ignore[assignment]
+        self.assertEqual(results['same'], ['a.txt'])
+        self.assertEqual(results['different'], ['sub/c.txt', 'w.txt'])
 
 
 if __name__ == '__main__':

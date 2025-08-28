@@ -144,13 +144,21 @@ def diff_directories(old_dir: Path, new_dir: Path) -> dict[str, list[str]]:
     }
 
 
-def write_json_output(output_dir: Path, data: dict[str, list[str]]) -> Path:
+def write_json_output(output_dir: Path, data: dict[str, list[str]], old_dir: Path, new_dir: Path) -> Path:
     """
-    Writes diff results to a timestamped JSON file under output_dir/diff/.
+    Writes structured diff output to a timestamped JSON file under output_dir/diff/.
+
+    Structure:
+      {
+        "comparison_directories": {"old_dir": "...", "new_dir": "..."},
+        "results": {"old_only": [...], "new_only": [...], "different": [...], "same": [...]} 
+      }
 
     Args:
         output_dir: Base directory where a 'diff' subfolder will be created.
-        data: The diff results to serialize to JSON.
+        data: The diff results to serialize under the 'results' key.
+        old_dir: The directory used as the "old" source.
+        new_dir: The directory used as the "new" source.
 
     Returns:
         The path to the written JSON file.
@@ -161,8 +169,15 @@ def write_json_output(output_dir: Path, data: dict[str, list[str]]) -> Path:
     diff_dir: Path = output_dir / 'diff'
     diff_dir.mkdir(parents=True, exist_ok=True)
     out_path: Path = diff_dir / f'diff_{timestamp}.json'
+    payload: dict[str, object] = {
+        'comparison_directories': {
+            'old_dir': str(old_dir.resolve()),
+            'new_dir': str(new_dir.resolve()),
+        },
+        'results': data,
+    }
     with out_path.open('w', encoding='utf-8') as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+        json.dump(payload, f, indent=2, ensure_ascii=False)
     return out_path
 
 
@@ -231,7 +246,7 @@ def main() -> None:
     print_summary(result)
 
     # Write JSON to timestamped file
-    out_path: Path = write_json_output(output_dir, result)
+    out_path: Path = write_json_output(output_dir, result, old_dir, new_dir)
     print(f'Wrote JSON diff to: {out_path}')
 
 
