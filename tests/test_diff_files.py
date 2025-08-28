@@ -2,9 +2,9 @@
 Tests file diff CLI behavior and JSON output for identical files.
 
 Usage:
- uv run -m unittest discover -v -s tests -p 'test_*\\.py'
+ uv run -m unittest discover -v -s tests -p 'test_*.py'
  ...or:
- uv run -m unittest --verbose discover --start-directory tests --pattern 'test_*\\.py'
+ uv run -m unittest --verbose discover --start-directory tests --pattern 'test_*.py'
 
 The "discover" option means "discover and run all tests in the 'tests' directory and its subdirectories."
 """
@@ -90,7 +90,6 @@ class TestDiffFilesCLIIdentical(unittest.TestCase):
         self.assertTrue(bool(results['same']))
         self.assertEqual(results['unified_diff_hunks'], [])
 
-
     def test_cli_reports_different_for_different_files(self) -> None:
         """
         Uses fixtures with differences and asserts same is False and at least one hunk exists.
@@ -124,7 +123,6 @@ class TestDiffFilesCLIIdentical(unittest.TestCase):
         self.assertIn('unified_diff_hunks', results)
         self.assertFalse(bool(results['same']))
         self.assertGreaterEqual(len(results['unified_diff_hunks']), 1)
-
 
     def test_cli_reports_multiple_hunks_when_multiple_sections_differ(self) -> None:
         """
