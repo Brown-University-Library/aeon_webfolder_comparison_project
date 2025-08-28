@@ -3,6 +3,7 @@
 import json
 import pathlib
 import re
+from datetime import datetime
 import pandas as pd
 
 # %%
@@ -229,7 +230,8 @@ df = (
 
 # %%
 ## saves csv
-csv_path = pathlib.Path('../output_dir/aeon_diff_customization_assessment.csv')
+timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+csv_path = pathlib.Path(f"../output_dir/aeon_diff_customization_assessment_{timestamp}.csv")
 csv_path.parent.mkdir(parents=True, exist_ok=True)
 df.to_csv(csv_path, index=False)
 
@@ -253,7 +255,7 @@ for _, row in df.iterrows():
 
 md_text = '\n'.join(md_lines)
 
-md_path = pathlib.Path('../output_dir/aeon_diff_customization_assessment.md')
+md_path = pathlib.Path(f"../output_dir/aeon_diff_customization_assessment_{timestamp}.md")
 md_path.parent.mkdir(parents=True, exist_ok=True)
 with md_path.open('w', encoding='utf-8') as f:
     f.write(md_text)
