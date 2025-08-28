@@ -1,13 +1,20 @@
 """
-Aggregates per-file diffs for all files listed as different in a directory diff JSON.
+Aggregates per-file diffs for all files listed as different into a single JSON file of the diffs.
+
+It does this by: 
+- loading the directory diff JSON file from the `--directory_diff_file_path` argument
+- calling the b__diff_files.compare_files(old_file, new_file) function 
+  for each file in the directory diff JSON's 'different' list.
+- assembling the results from each of the diffed-files into a single json file, then 
+- outputting the big list of results to the `--output_json_path` argument.
 
 Usage:
-  uv run c__diff_all_files.py \
+  uv run ./c__diff_all_files.py \
     --directory_diff_file_path "/path/to/diffed_dirs/diff_YYYYMMDD-HHMMSS.json" \
-    --output_json_path "/absolute/path/to/output_dir/diffed_files_combined/diff_all.json"
+    --output_json_path "/path/to/output_dir/diffed_files_combined/diff_all.json"
 
 Example (using the sample mini JSON in this repo):
-  uv run c__diff_all_files.py \
+  uv run ./c__diff_all_files.py \
     --directory_diff_file_path "../output_dir/diffed_dirs/mini_output.json" \
     --output_json_path "../output_dir/diffed_files_combined/diff_all_sample.json"
 
@@ -29,7 +36,7 @@ from typing import Any
 # Local module import
 import b__diff_files as diff_files
 
-# logging ----------------------------------------------------------
+## logging ----------------------------------------------------------
 log: logging.Logger = logging.getLogger(__name__)
 
 
@@ -52,7 +59,7 @@ def _configure_logging() -> None:
     log.debug('starting log')
 
 
-# core -------------------------------------------------------------
+## core -------------------------------------------------------------
 
 
 def _load_directory_diff(path: Path) -> dict[str, Any]:
@@ -89,7 +96,7 @@ def _assemble_output_path(output_json_path: Path) -> Path:
     # If the provided path looks like a directory, synthesize a timestamped filename.
     if output_json_path.suffix.lower() != '.json':
         timestamp: str = datetime.now().strftime('%Y%m%d-%H%M%S')
-        output_json_path = (output_json_path / f'diff_all_{timestamp}.json')
+        output_json_path = output_json_path / f'diff_all_{timestamp}.json'
 
     output_json_path.parent.mkdir(parents=True, exist_ok=True)
     return output_json_path
@@ -116,8 +123,8 @@ def diff_all_files(directory_diff_file: Path, output_json_path: Path) -> Path:
     skipped: int = 0
 
     for rel in rel_paths:
-        old_file: Path = (old_dir / rel)
-        new_file: Path = (new_dir / rel)
+        old_file: Path = old_dir / rel
+        new_file: Path = new_dir / rel
         if not old_file.is_file() or not new_file.is_file():
             log.warning('Skipping missing pair: %s | %s', old_file, new_file)
             skipped += 1
@@ -129,14 +136,16 @@ def diff_all_files(directory_diff_file: Path, output_json_path: Path) -> Path:
             skipped += 1
             continue
 
-        combined_results.append({
-            'relative_path': rel,
-            'comparison_files': {
-                'old_file': str(old_file.resolve()),
-                'new_file': str(new_file.resolve()),
-            },
-            'results': result,
-        })
+        combined_results.append(
+            {
+                'relative_path': rel,
+                'comparison_files': {
+                    'old_file': str(old_file.resolve()),
+                    'new_file': str(new_file.resolve()),
+                },
+                'results': result,
+            }
+        )
         processed += 1
 
     payload: dict[str, Any] = {
@@ -158,7 +167,7 @@ def diff_all_files(directory_diff_file: Path, output_json_path: Path) -> Path:
     return out_path
 
 
-# cli --------------------------------------------------------------
+## cli --------------------------------------------------------------
 
 
 def parse_args() -> argparse.Namespace:
@@ -189,7 +198,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-# manager ----------------------------------------------------------
+## manager ----------------------------------------------------------
 
 
 def main() -> None:

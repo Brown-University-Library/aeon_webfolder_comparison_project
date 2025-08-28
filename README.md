@@ -43,7 +43,7 @@ Diff all files...
     ```
     uv run c__diff_all_files.py --directory_diff_file_path "foo" --output_json_path "bar"
     ```
-    This code should 
+    This code should:
     - load the `directory_diff_file_path` json file, then 
     - loop over each file in the `different` list, and run `b__diff_files.py` on each file pair, then 
     - assemble the results from each of the diffed-files into a single json file, then 
