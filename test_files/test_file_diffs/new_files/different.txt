@@ -1,0 +1,2 @@
+new version line 1
+kept only in new version
