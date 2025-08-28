@@ -210,8 +210,8 @@ def main() -> None:
     _configure_logging()
     args: argparse.Namespace = parse_args()
 
-    directory_diff_file = Path(args.directory_diff_file_path)
-    output_json_path = Path(args.output_json_path)
+    directory_diff_file = Path(args.directory_diff_file_path).resolve()
+    output_json_path = Path(args.output_json_path).resolve()
 
     if not directory_diff_file.is_file():
         raise SystemExit(f'directory_diff_file_path is not a file: {directory_diff_file}')
