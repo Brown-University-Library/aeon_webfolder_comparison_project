@@ -7,6 +7,7 @@ It does this by:
   for each file in the directory diff JSON's 'different' list.
 - assembling the results from each of the diffed-files into a single json file, then 
 - outputting the big list of results to the `--output_json_path` argument.
+  - note that a timestamp will be added to the given foo.json output-path.
 
 Usage:
   uv run ./c__diff_all_files.py \
@@ -102,10 +103,10 @@ def _assemble_output_path(output_json_path: Path) -> Path:
         # Path ends with .json. If the filename does not appear to contain a timestamp,
         # append one before the extension: foo.json -> foo_YYYYMMDD-HHMMSS.json
         # Timestamp pattern used elsewhere: YYYYMMDD-HHMMSS
-        name_has_ts: bool = bool(re.search(r"\d{8}-\d{6}", output_json_path.stem))
+        name_has_ts: bool = bool(re.search(r'\d{8}-\d{6}', output_json_path.stem))
         if not name_has_ts:
             timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
-            output_json_path = output_json_path.with_name(f"{output_json_path.stem}_{timestamp}{output_json_path.suffix}")
+            output_json_path = output_json_path.with_name(f'{output_json_path.stem}_{timestamp}{output_json_path.suffix}')
 
     output_json_path.parent.mkdir(parents=True, exist_ok=True)
     return output_json_path
