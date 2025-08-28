@@ -13,6 +13,7 @@ This repo will contain code for:
 
 ---
 
+
 ## TODO
 
 Compare two folders...
@@ -29,12 +30,36 @@ Compare two folders...
  - [x] running that should output JSON for the above results, saving it to a datestamped file in a "diffed_dirs" directory.
 
 Compare two files...
-- [ ] create a test that will run `b__diff_files.py` on a pair of files that are the same, and verify that the output.json indicates they're the same.
-- [ ] create a test that will run `b__diff_files.py` on a pair of files that are different, and verify that the output.json indicates they're different.
-- [ ] create `b__diff_files.py` code that will be run via:
+- [x] create a test that will run `b__diff_files.py` on a pair of files that are the same, and verify that the output.json indicates they're the same.
+- [x] create a test that will run `b__diff_files.py` on a pair of files that are different, and verify that the output.json indicates they're different.
+- [x] create `b__diff_files.py` code that will be run via:
     ```
     uv run b__diff_files.py --old_file_path "foo" --new_file_path "bar" --output_dir_path "baz"
     ```
-- [ ] running that should output JSON for the above results, saving it to a datestamped file in a "diffed_files" directory.
+- [x] running that should output JSON for the above results, saving it to a datestamped file in a "diffed_files" directory.
+
+Diff all files...
+- [ ] create `c__diff_all_files.py` code that will be run via:
+    ```
+    uv run c__diff_all_files.py --directory_diff_file_path "foo" --output_json_path "bar"
+    ```
+    This code should 
+    - load the `directory_diff_file_path` json file, then 
+    - loop over each file in the `different` list, and run `b__diff_files.py` on each file pair, then 
+    - output the results to the `output_json_path` json file.
+- [ ] running that should output a JSON file for the above results, saving it to a datestamped file in a "diffed_files_combined" directory.
+---
+
+
+## Notes
+
+Running tests...
+
+Usage:
+ uv run -m unittest discover -v -s tests -p 'test_*.py'
+ ...or:
+ uv run -m unittest discover --verbose --start-directory tests --pattern 'test_*.py'
+
+The "discover" option means "discover and run all tests in the 'tests' directory and its subdirectories."
 
 ---
