@@ -8,8 +8,13 @@ from datetime import datetime
 from pathlib import Path
 
 ## setup logging ----------------------------------------------------
+LOG_LEVEL: str = os.environ.get('LOG_LEVEL', 'INFO')
+level_dict = {
+    'DEBUG': logging.DEBUG,
+    'INFO': logging.INFO,
+}
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=level_dict.get(LOG_LEVEL),
     format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
     datefmt='%d/%b/%Y %H:%M:%S',
 )
