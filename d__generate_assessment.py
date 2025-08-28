@@ -168,6 +168,24 @@ def compute_probability(local_removed_count, vendor_added_count, upgrade_count):
     return max(0.0, min(1.0, p))
 
 
+def display_dataframe_to_user(title: str, df: pd.DataFrame, max_rows: int = 50) -> None:
+    """
+    Displays the dataframe in Jupyter when available; otherwise prints a truncated text view.
+    """
+    try:
+        from IPython.display import display, Markdown  # type: ignore
+        display(Markdown(f"### {title}"))
+        display(df)
+    except Exception:
+        print(f"\n=== {title} ===")
+        with pd.option_context(
+            "display.max_rows", max_rows,
+            "display.max_columns", None,
+            "display.width", 120,
+        ):
+            print(df)
+
+
 # %%
 ## processes files
 rows = []
@@ -241,8 +259,6 @@ with md_path.open('w', encoding='utf-8') as f:
 
 # %%
 ## displays dataframe to user
-from caas_jupyter_tools import display_dataframe_to_user
-
 display_dataframe_to_user('Aeon diff customization assessment', df)
 
 csv_path, md_path
