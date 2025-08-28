@@ -8,8 +8,8 @@ from pathlib import Path
 
 def collect_files(base_dir: Path) -> dict[str, Path]:
     """
-    Walks a directory and returns a mapping of relative file paths (posix style)
-    to absolute Paths. Only includes files (not directories).
+    Collects files under base_dir and returns a mapping of relative POSIX paths to absolute Paths.
+    Only includes files (not directories).
     """
     base_dir = base_dir.resolve()
     mapping: dict[str, Path] = {}
@@ -24,8 +24,7 @@ def collect_files(base_dir: Path) -> dict[str, Path]:
 
 def compare_common_files(old_map: dict[str, Path], new_map: dict[str, Path]) -> tuple[list[str], list[str]]:
     """
-    Compares files present in both old and new maps.
-
+    Compares content of files present in both maps and returns (same, different) lists.
     Returns:
       - same: list of relative paths with identical content
       - different: list of relative paths with differing content
@@ -51,7 +50,7 @@ def compare_common_files(old_map: dict[str, Path], new_map: dict[str, Path]) -> 
 
 def diff_directories(old_dir: Path, new_dir: Path) -> dict[str, list[str]]:
     """
-    Compute a recursive diff between two directories.
+    Computes a recursive diff between two directories.
 
     Args:
         old_dir: Path to the "old" directory.
@@ -85,7 +84,7 @@ def diff_directories(old_dir: Path, new_dir: Path) -> dict[str, list[str]]:
 
 def write_json_output(output_dir: Path, data: dict) -> Path:
     """
-    Write diff results to a timestamped JSON file under output_dir/diff/.
+    Writes diff results to a timestamped JSON file under output_dir/diff/.
 
     Args:
         output_dir: Base directory where a 'diff' subfolder will be created.
@@ -105,7 +104,7 @@ def write_json_output(output_dir: Path, data: dict) -> Path:
 
 def print_summary(result: dict[str, list[str]]) -> None:
     """
-    Print a concise summary of diff results to stdout.
+    Prints a concise summary of diff results to stdout.
     """
     print('Folder diff results:')
     print(f'- old_only: {len(result["old_only"])}')
@@ -116,7 +115,7 @@ def print_summary(result: dict[str, list[str]]) -> None:
 
 def parse_args() -> argparse.Namespace:
     """
-    Parse and return CLI arguments for directory comparison.
+    Parses and returns CLI arguments for directory comparison.
     """
     parser = argparse.ArgumentParser(
         description=('Compare two directories (old vs new) and output a JSON summary of file differences.')
@@ -142,7 +141,7 @@ def parse_args() -> argparse.Namespace:
 ## manager ----------------------------------------------------------
 def main() -> None:
     """
-    Entry point: run diff, print summary, and write JSON output.
+    Runs diff, prints summary, and writes JSON output.
     """
     args = parse_args()
 
