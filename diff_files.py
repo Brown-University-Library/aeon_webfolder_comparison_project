@@ -1,0 +1,158 @@
+"""
+Compares two files and writes a JSON summary of whether they are the same or different.
+
+Usage:
+  uv run diff_files.py \
+    --old_file_path "/path/to/old.txt" \
+    --new_file_path "/path/to/new.txt" \
+    --output_dir_path "/absolute/path/to/output_dir"
+
+Output (stdout):
+  {"output_path": "/absolute/path/to/output_dir/diffed_files/diff_YYYYMMDD-HHMMSS.json"}
+
+Environment:
+  LOG_LEVEL=[DEBUG|INFO]  (optional; defaults to INFO)
+"""
+
+from __future__ import annotations
+
+import argparse
+import filecmp
+import json
+import logging
+import os
+from datetime import datetime
+from pathlib import Path
+
+# logging ----------------------------------------------------------
+log: logging.Logger = logging.getLogger(__name__)
+
+
+def _configure_logging() -> None:
+    """
+    Configures logging based on the LOG_LEVEL environment variable.
+
+    Called by main().
+    """
+    LOG_LEVEL: str = os.environ.get('LOG_LEVEL', 'INFO')
+    level_dict: dict[str, int] = {
+        'DEBUG': logging.DEBUG,
+        'INFO': logging.INFO,
+    }
+    logging.basicConfig(
+        level=level_dict.get(LOG_LEVEL, logging.INFO),
+        format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
+        datefmt='%d/%b/%Y %H:%M:%S',
+    )
+    log.debug('starting log')
+
+
+# core -------------------------------------------------------------
+
+def compare_files(old_file: Path, new_file: Path) -> dict[str, object]:
+    """
+    Compares two files and returns a result mapping with same/different flags.
+
+    Returns a dict like:
+      {"same": bool, "different": bool}
+
+    Called by main().
+    """
+    try:
+        are_same: bool = filecmp.cmp(old_file, new_file, shallow=False)
+    except OSError:
+        # If either file can't be read, consider them different
+        are_same = False
+    return {
+        'same': are_same,
+        'different': not are_same,
+    }
+
+
+def write_json_output(output_dir: Path, result: dict[str, object], old_file: Path, new_file: Path) -> Path:
+    """
+    Writes structured output to a timestamped JSON file under output_dir/diffed_files/.
+
+    Structure:
+      {
+        "comparison_files": {"old_file": "...", "new_file": "..."},
+        "results": {"same": bool, "different": bool}
+      }
+
+    Called by main().
+    """
+    timestamp: str = datetime.now().strftime('%Y%m%d-%H%M%S')
+    diff_dir: Path = output_dir / 'diffed_files'
+    diff_dir.mkdir(parents=True, exist_ok=True)
+    out_path: Path = diff_dir / f'diff_{timestamp}.json'
+
+    payload: dict[str, object] = {
+        'comparison_files': {
+            'old_file': str(old_file.resolve()),
+            'new_file': str(new_file.resolve()),
+        },
+        'results': result,
+    }
+    with out_path.open('w', encoding='utf-8') as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+    return out_path
+
+
+# cli --------------------------------------------------------------
+
+def parse_args() -> argparse.Namespace:
+    """
+    Parses and returns CLI arguments for file comparison.
+
+    Called by main().
+    """
+    parser: argparse.ArgumentParser = argparse.ArgumentParser(
+        description=('Compare two files (old vs new) and output a JSON summary of whether they are the same or different.')
+    )
+    parser.add_argument(
+        '--old_file_path',
+        required=True,
+        help="Path to the 'old' file",
+    )
+    parser.add_argument(
+        '--new_file_path',
+        required=True,
+        help="Path to the 'new' file",
+    )
+    parser.add_argument(
+        '--output_dir_path',
+        required=True,
+        help="Directory where the 'diffed_files' subdirectory and JSON output will be written",
+    )
+    return parser.parse_args()
+
+
+# manager ----------------------------------------------------------
+
+def main() -> None:
+    """
+    Runs comparison and writes JSON output; prints output path JSON to stdout.
+
+    Called by __main__.
+    """
+    _configure_logging()
+    args: argparse.Namespace = parse_args()
+
+    old_file: Path = Path(args.old_file_path)
+    new_file: Path = Path(args.new_file_path)
+    output_dir: Path = Path(args.output_dir_path)
+
+    if not old_file.is_file():
+        raise SystemExit(f'old_file_path is not a file: {old_file}')
+    if not new_file.is_file():
+        raise SystemExit(f'new_file_path is not a file: {new_file}')
+
+    result: dict[str, object] = compare_files(old_file, new_file)
+    out_path: Path = write_json_output(output_dir, result, old_file, new_file)
+
+    # Print machine-readable location for tests/automation
+    print(json.dumps({'output_path': str(out_path)}, ensure_ascii=False))
+
+
+if __name__ == '__main__':
+    main()

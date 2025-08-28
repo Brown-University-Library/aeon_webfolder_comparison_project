@@ -11,7 +11,6 @@ The "discover" option means "discover and run all tests in the 'tests' directory
 
 import json
 import subprocess
-import tempfile
 import unittest
 from pathlib import Path
 
@@ -45,55 +44,51 @@ class TestDiffFilesCLIIdentical(unittest.TestCase):
         """
         Creates two identical temp files, runs the CLI, and asserts JSON marks them as same.
         """
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmpdir_path = Path(tmpdir)
-            old_file: Path = tmpdir_path / 'old.txt'
-            new_file: Path = tmpdir_path / 'new.txt'
-            content = 'hello world\nthis is identical\n'
-            old_file.write_text(content, encoding='utf-8')
-            new_file.write_text(content, encoding='utf-8')
+        # Use static fixtures under test_files/test_file_diffs
+        old_file: Path = PROJECT_ROOT / 'test_files' / 'test_file_diffs' / 'old_files' / 'same.txt'
+        new_file: Path = PROJECT_ROOT / 'test_files' / 'test_file_diffs' / 'new_files' / 'same.txt'
 
-            cmd: list[str] = [
-                'uv',
-                'run',
-                str(PROJECT_ROOT / 'diff_files.py'),
-                '--old_file_path',
-                str(old_file),
-                '--new_file_path',
-                str(new_file),
-                '--output_dir_path',
-                str(OUTPUT_DIR),
-            ]
-            # Intentionally allow failure until diff_files.py is implemented
-            proc = subprocess.run(cmd, capture_output=True, text=True)
+        cmd: list[str] = [
+            'uv',
+            'run',
+            str(PROJECT_ROOT / 'diff_files.py'),
+            '--old_file_path',
+            str(old_file),
+            '--new_file_path',
+            str(new_file),
+            '--output_dir_path',
+            str(OUTPUT_DIR),
+        ]
+        # Intentionally allow failure until diff_files.py is implemented
+        proc = subprocess.run(cmd, capture_output=True, text=True)
 
-            # Expect stdout to be JSON containing an 'output_path' to the written JSON
-            try:
-                stdout_json: dict[str, object] = json.loads(proc.stdout)
-            except Exception as exc:  # noqa: BLE001
-                self.fail(f'Expected JSON on stdout but got:\n{proc.stdout}\n\nstderr=\n{proc.stderr}\nError: {exc}')
+        # Expect stdout to be JSON containing an 'output_path' to the written JSON
+        try:
+            stdout_json: dict[str, object] = json.loads(proc.stdout)
+        except Exception as exc:  # noqa: BLE001
+            self.fail(f'Expected JSON on stdout but got:\n{proc.stdout}\n\nstderr=\n{proc.stderr}\nError: {exc}')
 
-            self.assertIn('output_path', stdout_json)
-            output_path = Path(str(stdout_json['output_path']))
-            self.assertTrue(output_path.exists(), msg=f'Output path does not exist: {output_path}')
+        self.assertIn('output_path', stdout_json)
+        output_path = Path(str(stdout_json['output_path']))
+        self.assertTrue(output_path.exists(), msg=f'Output path does not exist: {output_path}')
 
-            with output_path.open('r', encoding='utf-8') as fh:
-                data: dict[str, object] = json.load(fh)
+        with output_path.open('r', encoding='utf-8') as fh:
+            data: dict[str, object] = json.load(fh)
 
-            # Basic schema checks (proposed contract for diff_files.py)
-            self.assertIn('comparison_files', data)
-            self.assertIn('results', data)
+        # Basic schema checks (proposed contract for diff_files.py)
+        self.assertIn('comparison_files', data)
+        self.assertIn('results', data)
 
-            comp_files: dict[str, str] = data['comparison_files']  # type: ignore[assignment]
-            self.assertEqual(comp_files['old_file'], str(old_file.resolve()))
-            self.assertEqual(comp_files['new_file'], str(new_file.resolve()))
+        comp_files: dict[str, str] = data['comparison_files']  # type: ignore[assignment]
+        self.assertEqual(comp_files['old_file'], str(old_file.resolve()))
+        self.assertEqual(comp_files['new_file'], str(new_file.resolve()))
 
-            results: dict[str, object] = data['results']  # type: ignore[assignment]
-            # Expectation for identical content
-            self.assertIn('same', results)
-            self.assertIn('different', results)
-            self.assertTrue(bool(results['same']))
-            self.assertFalse(bool(results['different']))
+        results: dict[str, object] = data['results']  # type: ignore[assignment]
+        # Expectation for identical content
+        self.assertIn('same', results)
+        self.assertIn('different', results)
+        self.assertTrue(bool(results['same']))
+        self.assertFalse(bool(results['different']))
 
 
 if __name__ == '__main__':
