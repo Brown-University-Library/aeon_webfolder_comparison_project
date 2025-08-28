@@ -20,7 +20,7 @@ Usage:
     - new_only: 1
     - different: 2
     - same: 1
-    Wrote JSON diff to: ../output_dir/diff/diff_20250827-214410.json
+    Wrote JSON diff to: ../output_dir/diffed_dirs/diff_20250827-214410.json
     ```
 
 Environment:
@@ -146,7 +146,7 @@ def diff_directories(old_dir: Path, new_dir: Path) -> dict[str, list[str]]:
 
 def write_json_output(output_dir: Path, data: dict[str, list[str]], old_dir: Path, new_dir: Path) -> Path:
     """
-    Writes structured diff output to a timestamped JSON file under output_dir/diff/.
+    Writes structured diff output to a timestamped JSON file under output_dir/diffed_dirs/.
 
     Structure:
       {
@@ -166,7 +166,7 @@ def write_json_output(output_dir: Path, data: dict[str, list[str]], old_dir: Pat
     Called by main().
     """
     timestamp: str = datetime.now().strftime('%Y%m%d-%H%M%S')
-    diff_dir: Path = output_dir / 'diff'
+    diff_dir: Path = output_dir / 'diffed_dirs'
     diff_dir.mkdir(parents=True, exist_ok=True)
     out_path: Path = diff_dir / f'diff_{timestamp}.json'
     payload: dict[str, object] = {
@@ -216,7 +216,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '--output_dir_path',
         required=True,
-        help="Directory where the 'diff' subdirectory and JSON output will be written",
+        help="Directory where the 'diffed_dirs' subdirectory and JSON output will be written",
     )
     return parser.parse_args()
 
