@@ -7,19 +7,24 @@ import pprint
 from datetime import datetime
 from pathlib import Path
 
-## setup logging ----------------------------------------------------
-LOG_LEVEL: str = os.environ.get('LOG_LEVEL', 'INFO')
-level_dict = {
-    'DEBUG': logging.DEBUG,
-    'INFO': logging.INFO,
-}
-logging.basicConfig(
-    level=level_dict.get(LOG_LEVEL),
-    format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
-    datefmt='%d/%b/%Y %H:%M:%S',
-)
+## logging ----------------------------------------------------------
 log: logging.Logger = logging.getLogger(__name__)
-log.debug('starting log')
+
+def _configure_logging() -> None:
+    """
+    Configures logging based on the LOG_LEVEL environment variable.
+    """
+    LOG_LEVEL: str = os.environ.get('LOG_LEVEL', 'INFO')
+    level_dict = {
+        'DEBUG': logging.DEBUG,
+        'INFO': logging.INFO,
+    }
+    logging.basicConfig(
+        level=level_dict.get(LOG_LEVEL, logging.INFO),
+        format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
+        datefmt='%d/%b/%Y %H:%M:%S',
+    )
+    log.debug('starting log')
 
 
 def collect_files(base_dir: Path) -> dict[str, Path]:
@@ -160,6 +165,7 @@ def main() -> None:
     """
     Runs diff, prints summary, and writes JSON output.
     """
+    _configure_logging()
     args: argparse.Namespace = parse_args()
 
     old_dir: Path = Path(args.old_dir_path)
