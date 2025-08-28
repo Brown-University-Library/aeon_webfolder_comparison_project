@@ -50,6 +50,19 @@ def compare_common_files(old_map: dict[str, Path], new_map: dict[str, Path]) -> 
 
 
 def diff_directories(old_dir: Path, new_dir: Path) -> dict[str, list[str]]:
+    """Compute a recursive diff between two directories.
+
+    Args:
+        old_dir: Path to the "old" directory.
+        new_dir: Path to the "new" directory.
+
+    Returns:
+        A dict with keys:
+        - 'old_only': files present only in old_dir (relative POSIX paths)
+        - 'new_only': files present only in new_dir
+        - 'different': files present in both but with different content
+        - 'same': files present in both with identical content
+    """
     old_map = collect_files(old_dir)
     new_map = collect_files(new_dir)
 
@@ -70,6 +83,15 @@ def diff_directories(old_dir: Path, new_dir: Path) -> dict[str, list[str]]:
 
 
 def write_json_output(output_dir: Path, data: dict) -> Path:
+    """Write diff results to a timestamped JSON file under output_dir/diff/.
+
+    Args:
+        output_dir: Base directory where a 'diff' subfolder will be created.
+        data: The diff results to serialize to JSON.
+
+    Returns:
+        The path to the written JSON file.
+    """
     timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
     diff_dir = output_dir / 'diff'
     diff_dir.mkdir(parents=True, exist_ok=True)
@@ -80,6 +102,7 @@ def write_json_output(output_dir: Path, data: dict) -> Path:
 
 
 def print_summary(result: dict[str, list[str]]) -> None:
+    """Print a concise summary of diff results to stdout."""
     print('Folder diff results:')
     print(f'- old_only: {len(result["old_only"])}')
     print(f'- new_only: {len(result["new_only"])}')
@@ -88,6 +111,7 @@ def print_summary(result: dict[str, list[str]]) -> None:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse and return CLI arguments for directory comparison."""
     parser = argparse.ArgumentParser(
         description=('Compare two directories (old vs new) and output a JSON summary of file differences.')
     )
@@ -111,6 +135,7 @@ def parse_args() -> argparse.Namespace:
 
 ## manager ----------------------------------------------------------
 def main() -> None:
+    """Entry point: run diff, print summary, and write JSON output."""
     args = parse_args()
 
     old_dir = Path(args.old_dir_path)
