@@ -7,18 +7,26 @@ Usage:
     --new_file_path "/path/to/new.txt" \
     --output_dir_path "/absolute/path/to/output_dir"
 
+    Example:
+    uv run diff_files.py \
+        --old_file_path "./test_files/test_file_diffs/old_files/multihunk2.txt" \
+        --new_file_path "./test_files/test_file_diffs/new_files/multihunk2.txt" \
+        --output_dir_path "../output_dir"
+
 Output (stdout):
   {"output_path": "/absolute/path/to/output_dir/diffed_files/diff_YYYYMMDD-HHMMSS.json"}
 
 Environment:
   LOG_LEVEL=[DEBUG|INFO]  (optional; defaults to INFO)
 """
- 
+
 import argparse
+import difflib
 import filecmp
 import json
 import logging
 import os
+import pprint
 from datetime import datetime
 from pathlib import Path
 
@@ -47,6 +55,7 @@ def _configure_logging() -> None:
 
 # core -------------------------------------------------------------
 
+
 def compare_files(old_file: Path, new_file: Path) -> dict[str, object]:
     """
     Compares two files and returns a result mapping with a sameness flag and diff hunks.
@@ -73,17 +82,17 @@ def compare_files(old_file: Path, new_file: Path) -> dict[str, object]:
 
     # Compute unified diff when content differs
     try:
-        old_lines: list[str] = old_file.read_text(encoding='utf-8', errors='replace').splitlines(keepends=True)
+        with old_file.open('r', encoding='utf-8', errors='replace') as prev:
+            old_lines: list[str] = [line.rstrip() for line in prev.readlines()]
     except Exception:
         old_lines = []
     try:
-        new_lines: list[str] = new_file.read_text(encoding='utf-8', errors='replace').splitlines(keepends=True)
+        with new_file.open('r', encoding='utf-8', errors='replace') as curr:
+            new_lines: list[str] = [line.rstrip() for line in curr.readlines()]
     except Exception:
         new_lines = []
 
-    import difflib
-
-    diff_lines: list[str] = list(
+    diff: list[str] = list(
         difflib.unified_diff(
             old_lines,
             new_lines,
@@ -92,13 +101,14 @@ def compare_files(old_file: Path, new_file: Path) -> dict[str, object]:
             lineterm='',
         )
     )
+    log.debug(f'diff: \n{pprint.pformat(diff)}')
     # Parse into hunks: split on lines starting with '@@'
     hunks: list[list[str]] = []
     current: list[str] = []
-    for line in diff_lines:
-        if line.startswith('--- ') or line.startswith('+++ '):
-            # skip file header; we already expose file paths separately
-            continue
+    for line in diff:
+        # if line.startswith('--- ') or line.startswith('+++ '):
+        #     # skip file header; we already expose file paths separately
+        #     continue
         if line.startswith('@@ '):
             if current:
                 hunks.append(current)
@@ -149,6 +159,7 @@ def write_json_output(output_dir: Path, result: dict[str, object], old_file: Pat
 
 # cli --------------------------------------------------------------
 
+
 def parse_args() -> argparse.Namespace:
     """
     Parses and returns CLI arguments for file comparison.
@@ -177,6 +188,7 @@ def parse_args() -> argparse.Namespace:
 
 
 # manager ----------------------------------------------------------
+
 
 def main() -> None:
     """
