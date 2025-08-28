@@ -1,3 +1,10 @@
+"""
+ Tests directory diff behavior and JSON output.
+
+ Usage:
+  uv run -m unittest discover -v -s tests -p 'test_*\.py'
+  or: uv run -m unittest --verbose discover --start-directory tests --pattern 'test_*\.py'
+ """
 import json
 import unittest
 from importlib import import_module
