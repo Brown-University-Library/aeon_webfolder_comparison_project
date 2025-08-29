@@ -35,9 +35,15 @@ from datetime import datetime
 import pandas as pd
 
 # %%
+# constants
+DIFF_INPUT_PATH = pathlib.Path('../output_dir/diffed_files_combined/diff_all_real_data.json')
+OUTPUT_DIR = pathlib.Path('../output_dir')
+CSV_FILENAME_TEMPLATE = 'aeon_diff_customization_assessment_{timestamp}.csv'
+MD_FILENAME_TEMPLATE = 'aeon_diff_customization_assessment_{timestamp}.md'
+
+# %%
 ## loads input json
-in_path = pathlib.Path('../output_dir/diffed_files_combined/diff_all_real_data.json')
-with in_path.open('r', encoding='utf-8') as f:
+with DIFF_INPUT_PATH.open('r', encoding='utf-8') as f:
     diff_payload = json.load(f)
 
 files = diff_payload.get('files', [])
@@ -263,7 +269,7 @@ df = (
 # %%
 ## saves csv
 timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
-csv_path = pathlib.Path(f'../output_dir/aeon_diff_customization_assessment_{timestamp}.csv')
+csv_path = OUTPUT_DIR / CSV_FILENAME_TEMPLATE.format(timestamp=timestamp)
 csv_path.parent.mkdir(parents=True, exist_ok=True)
 df.to_csv(csv_path, index=False)
 
@@ -287,7 +293,7 @@ for _, row in df.iterrows():
 
 md_text = '\n'.join(md_lines)
 
-md_path = pathlib.Path(f'../output_dir/aeon_diff_customization_assessment_{timestamp}.md')
+md_path = OUTPUT_DIR / MD_FILENAME_TEMPLATE.format(timestamp=timestamp)
 md_path.parent.mkdir(parents=True, exist_ok=True)
 with md_path.open('w', encoding='utf-8') as f:
     f.write(md_text)
