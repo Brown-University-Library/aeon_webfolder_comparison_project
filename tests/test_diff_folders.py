@@ -3,14 +3,10 @@ Tests directory diff behavior and JSON output.
 """
 
 import json
-import types
 import unittest
-from importlib import import_module
 from pathlib import Path
 
-# Import the module under test
-module_path = 'a__diff_folders'
-df: types.ModuleType = import_module(module_path)
+import a__diff_folders
 
 PROJECT_ROOT: Path = Path(__file__).resolve().parents[1]
 TEST_ROOT: Path = (PROJECT_ROOT / 'test_files' / 'test_directory_diffs').resolve()
@@ -25,7 +21,7 @@ class TestDiffFoldersCombined(unittest.TestCase):
         old_dir: Path = TEST_ROOT / 'old_files'
         new_dir: Path = TEST_ROOT / 'new_files'
 
-        result: dict[str, list[str]] = df.diff_directories(old_dir, new_dir)
+        result: dict[str, list[str]] = a__diff_folders.diff_directories(old_dir, new_dir)
 
         # Categories present
         self.assertIn('old_only', result)
@@ -40,7 +36,7 @@ class TestDiffFoldersCombined(unittest.TestCase):
         self.assertEqual(result['new_only'], ['z.txt'])
 
         # JSON output check
-        out_path: Path = df.write_json_output(OUTPUT_DIR, result, old_dir, new_dir)
+        out_path: Path = a__diff_folders.write_json_output(OUTPUT_DIR, result, old_dir, new_dir)
         self.assertTrue(out_path.exists())
         self.assertTrue(out_path.name.startswith('diff_'))
         self.assertEqual(out_path.suffix, '.json')
