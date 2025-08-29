@@ -5,7 +5,7 @@ description = "Experimental project to compare Aeon webfolders."
 readme = "coming"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "pandas~=2.3.0",
+    "polars",
 ]
 
 [dependency-groups]

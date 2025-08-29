@@ -33,7 +33,7 @@ from datetime import datetime
 from typing import Any
 from collections.abc import Iterator
 
-import pandas as pd
+import polars as pl
 
 ## constants
 DIFF_INPUT_PATH: pathlib.Path = pathlib.Path('../output_dir/diffed_files_combined/diff_all_real_data.json').resolve()
@@ -203,7 +203,7 @@ def compute_probability(local_removed_count: int, vendor_added_count: int, upgra
     return max(0.0, min(1.0, p))
 
 
-def display_dataframe_to_user(title: str, df: pd.DataFrame, max_rows: int = 50) -> None:
+def display_dataframe_to_user(title: str, df: pl.DataFrame, max_rows: int = 50) -> None:
     """
     Displays the dataframe in Jupyter when available; otherwise prints a truncated text view.
     """
@@ -211,18 +211,14 @@ def display_dataframe_to_user(title: str, df: pd.DataFrame, max_rows: int = 50) 
         from IPython.display import Markdown, display  # type: ignore
 
         display(Markdown(f'### {title}'))
-        display(df)
+        # Prefer rich HTML if pandas is available; otherwise show head()
+        try:
+            display(df.to_pandas())
+        except Exception:
+            display(df.head(max_rows))
     except Exception:
         print(f'\n=== {title} ===')
-        with pd.option_context(
-            'display.max_rows',
-            max_rows,
-            'display.max_columns',
-            None,
-            'display.width',
-            120,
-        ):
-            print(df)
+        print(df.head(max_rows))
 
 
 def main() -> int:
@@ -280,17 +276,16 @@ def main() -> int:
             }
         )
 
-    df: pd.DataFrame = (
-        pd.DataFrame(rows)
-        .sort_values(by=['probability_of_customization', 'file_path'], ascending=[False, True])
-        .reset_index(drop=True)
+    df: pl.DataFrame = (
+        pl.DataFrame(rows)
+        .sort(by=['probability_of_customization', 'file_path'], descending=[True, False])
     )
 
     # saves csv
     timestamp: str = datetime.now().strftime('%Y%m%d-%H%M%S')
     csv_path: pathlib.Path = OUTPUT_DIR / CSV_FILENAME_TEMPLATE.format(timestamp=timestamp)
     csv_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(csv_path, index=False)
+    df.write_csv(str(csv_path))
 
     # builds markdown report
     md_lines: list[str] = []
@@ -303,7 +298,7 @@ def main() -> int:
     )
     md_lines.append('---\n')
 
-    for _, row in df.iterrows():
+    for row in df.iter_rows(named=True):
         md_lines.append(f'## {row["file_path"]}')
         md_lines.append(f'- **probability_of_customization**: {row["probability_of_customization"]:.1f}%')
         note_txt: str = row['notes'] or '(no notable signals detected)'
