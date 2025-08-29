@@ -193,14 +193,18 @@ def build_notes(
     return '; '.join(notes) if notes else ''
 
 
-def compute_probability(local_removed_count: int, vendor_added_count: int, upgrade_count: int) -> float:
-    counter: int = vendor_added_count + upgrade_count
-    raw: int = local_removed_count
-    if raw == 0 and counter == 0:
-        p: float = 0.5
-    else:
-        p = raw / (raw + counter)
-    return max(0.0, min(1.0, p))
+def compute_probabilities(
+    local_removed_count: int, vendor_added_count: int, upgrade_count: int
+) -> tuple[float, float]:
+    """
+    Computes probabilities for local customizations vs vendor updates from signal counts.
+    """
+    total: int = local_removed_count + vendor_added_count + upgrade_count
+    if total == 0:
+        return 0.5, 0.5
+    p_local: float = local_removed_count / total
+    p_vendor: float = (vendor_added_count + upgrade_count) / total
+    return max(0.0, min(1.0, p_local)), max(0.0, min(1.0, p_vendor))
 
 
 def display_dataframe_to_user(title: str, df: pl.DataFrame, max_rows: int = 50) -> None:
@@ -251,8 +255,8 @@ def main() -> int:
         vendor_added: list[str] = find_matches(added_lines, vendor_regexes)
         upgrade_hits_removed: list[str] = find_matches(removed_lines, upgrade_regexes)
         upgrade_hits_added: list[str] = find_matches(added_lines, upgrade_regexes)
-        # compute probability
-        p: float = compute_probability(
+        # compute probabilities
+        p_local, p_vendor = compute_probabilities(
             len(local_removed),
             len(vendor_added),
             len(upgrade_hits_removed) + len(upgrade_hits_added),
@@ -271,14 +275,15 @@ def main() -> int:
         rows.append(
             {
                 'file_path': rel,
-                'probability_of_customization': round(p * 100, 1),  # percent
+                'probability_local_customization': round(p_local * 100, 1),  # percent
+                'probability_vendor_update': round(p_vendor * 100, 1),      # percent
                 'notes': notes,
             }
         )
 
     df: pl.DataFrame = (
         pl.DataFrame(rows)
-        .sort(by=['probability_of_customization', 'file_path'], descending=[True, False])
+        .sort(by=['probability_local_customization', 'file_path'], descending=[True, False])
     )
 
     # saves csv
@@ -300,7 +305,12 @@ def main() -> int:
 
     for row in df.iter_rows(named=True):
         md_lines.append(f'## {row["file_path"]}')
-        md_lines.append(f'- **probability_of_customization**: {row["probability_of_customization"]:.1f}%')
+        md_lines.append(
+            f'- **probability_local_customization**: {row["probability_local_customization"]:.1f}%'
+        )
+        md_lines.append(
+            f'- **probability_vendor_update**: {row["probability_vendor_update"]:.1f}%'
+        )
         note_txt: str = row['notes'] or '(no notable signals detected)'
         md_lines.append(f'- **notes**: {note_txt}\n')
 

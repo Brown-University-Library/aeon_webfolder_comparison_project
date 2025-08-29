@@ -55,13 +55,21 @@ class TestHelpers(unittest.TestCase):
         tokens = gen.summarize_matched_terms(patterns)
         self.assertEqual(tokens, ['Brown Digital Repository', 'library.brown.edu', 'JHL'])
 
-    def test_compute_probability_edges(self) -> None:
+    def test_compute_probabilities_edges(self) -> None:
         """
-        Validates 0/0 -> 0.5 and clamped range.
+        Validates 0/0 -> (0.5, 0.5) and clamped ranges for local/vendor.
         """
-        self.assertAlmostEqual(gen.compute_probability(0, 0, 0), 0.5)
-        self.assertAlmostEqual(gen.compute_probability(2, 0, 0), 1.0)
-        self.assertLess(gen.compute_probability(1, 3, 0), 0.5)
+        p_local, p_vendor = gen.compute_probabilities(0, 0, 0)
+        self.assertAlmostEqual(p_local, 0.5)
+        self.assertAlmostEqual(p_vendor, 0.5)
+
+        p_local, p_vendor = gen.compute_probabilities(2, 0, 0)
+        self.assertAlmostEqual(p_local, 1.0)
+        self.assertAlmostEqual(p_vendor, 0.0)
+
+        p_local, p_vendor = gen.compute_probabilities(1, 3, 0)
+        self.assertLess(p_local, 0.5)
+        self.assertGreater(p_vendor, 0.5)
 
     def test_build_notes_composes_expected_phrases(self) -> None:
         """
