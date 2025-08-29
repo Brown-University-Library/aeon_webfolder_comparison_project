@@ -39,11 +39,7 @@ OUTPUT_DIR = pathlib.Path('../output_dir').resolve()
 CSV_FILENAME_TEMPLATE = 'aeon_diff_customization_assessment_{timestamp}.csv'
 MD_FILENAME_TEMPLATE = 'aeon_diff_customization_assessment_{timestamp}.md'
 
-## loads input json
-with DIFF_INPUT_PATH.open('r', encoding='utf-8') as f:
-    diff_payload = json.load(f)
-
-files = diff_payload.get('files', [])
+## loads input json (done inside main)
 
 ## defines heuristics
 local_term_patterns = [
@@ -219,78 +215,104 @@ def display_dataframe_to_user(title: str, df: pd.DataFrame, max_rows: int = 50) 
             print(df)
 
 
-## processes files
-rows = []
-for f in files:
-    rel = f.get('relative_path')
-    res = f.get('results', {})
-    hunks = res.get('unified_diff_hunks') or []
-    # flatten changed lines
-    added_lines = []
-    removed_lines = []
-    for sign, content in iter_changed_lines(hunks):
-        if sign == '+':
-            added_lines.append(content)
-        elif sign == '-':
-            removed_lines.append(content)
-    # find matches
-    local_removed = find_matches(removed_lines, local_regexes)
-    local_added = find_matches(added_lines, local_regexes)  # rarely relevant
-    vendor_added = find_matches(added_lines, vendor_regexes)
-    upgrade_hits_removed = find_matches(removed_lines, upgrade_regexes)
-    upgrade_hits_added = find_matches(added_lines, upgrade_regexes)
-    # compute probability
-    p = compute_probability(len(local_removed), len(vendor_added), len(upgrade_hits_removed) + len(upgrade_hits_added))
-    # build notes
-    notes = build_notes(
-        rel, removed_lines, added_lines, local_removed, vendor_added, upgrade_hits_removed, upgrade_hits_added
+def main() -> int:
+    """
+    Orchestrates generation of the customization assessment CSV and Markdown report.
+    """
+    import json
+
+    # load input json
+    with DIFF_INPUT_PATH.open('r', encoding='utf-8') as f:
+        diff_payload = json.load(f)
+
+    files = diff_payload.get('files', [])
+
+    # process files
+    rows = []
+    for fobj in files:
+        rel = fobj.get('relative_path')
+        res = fobj.get('results', {})
+        hunks = res.get('unified_diff_hunks') or []
+        # flatten changed lines
+        added_lines = []
+        removed_lines = []
+        for sign, content in iter_changed_lines(hunks):
+            if sign == '+':
+                added_lines.append(content)
+            elif sign == '-':
+                removed_lines.append(content)
+        # find matches
+        local_removed = find_matches(removed_lines, local_regexes)
+        local_added = find_matches(added_lines, local_regexes)  # rarely relevant
+        vendor_added = find_matches(added_lines, vendor_regexes)
+        upgrade_hits_removed = find_matches(removed_lines, upgrade_regexes)
+        upgrade_hits_added = find_matches(added_lines, upgrade_regexes)
+        # compute probability
+        p = compute_probability(
+            len(local_removed),
+            len(vendor_added),
+            len(upgrade_hits_removed) + len(upgrade_hits_added),
+        )
+        # build notes
+        notes = build_notes(
+            rel,
+            removed_lines,
+            added_lines,
+            local_removed,
+            vendor_added,
+            upgrade_hits_removed,
+            upgrade_hits_added,
+        )
+        # finalize
+        rows.append(
+            {
+                'file_path': rel,
+                'probability_of_customization': round(p * 100, 1),  # percent
+                'notes': notes,
+            }
+        )
+
+    df = (
+        pd.DataFrame(rows)
+        .sort_values(by=['probability_of_customization', 'file_path'], ascending=[False, True])
+        .reset_index(drop=True)
     )
-    # finalize
-    rows.append(
-        {
-            'file_path': rel,
-            'probability_of_customization': round(p * 100, 1),  # percent
-            'notes': notes,
-        }
+
+    # saves csv
+    timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+    csv_path = OUTPUT_DIR / CSV_FILENAME_TEMPLATE.format(timestamp=timestamp)
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(csv_path, index=False)
+
+    # builds markdown report
+    md_lines = []
+    md_lines.append('# Aeon diff: customization likelihood report\n')
+    md_lines.append(
+        'This report scores each changed file on the likelihood that differences reflect **local customizations** (vs vendor **upgrade** changes).'
     )
+    md_lines.append(
+        '\n**How to read**: higher percentages suggest text that looks Brown/JHL-specific was removed/changed; lower percentages suggest generic Aeon features were added or structural changes came from upstream.\n'
+    )
+    md_lines.append('---\n')
 
-df = (
-    pd.DataFrame(rows)
-    .sort_values(by=['probability_of_customization', 'file_path'], ascending=[False, True])
-    .reset_index(drop=True)
-)
+    for _, row in df.iterrows():
+        md_lines.append(f'## {row["file_path"]}')
+        md_lines.append(f'- **probability_of_customization**: {row["probability_of_customization"]:.1f}%')
+        note_txt = row['notes'] or '(no notable signals detected)'
+        md_lines.append(f'- **notes**: {note_txt}\n')
 
-## saves csv
-timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
-csv_path = OUTPUT_DIR / CSV_FILENAME_TEMPLATE.format(timestamp=timestamp)
-csv_path.parent.mkdir(parents=True, exist_ok=True)
-df.to_csv(csv_path, index=False)
+    md_text = '\n'.join(md_lines)
 
-## builds markdown report
-md_lines = []
-md_lines.append('# Aeon diff: customization likelihood report\n')
-md_lines.append(
-    'This report scores each changed file on the likelihood that differences reflect **local customizations** (vs vendor **upgrade** changes).'
-)
-md_lines.append(
-    '\n**How to read**: higher percentages suggest text that looks Brown/JHL-specific was removed/changed; lower percentages suggest generic Aeon features were added or structural changes came from upstream.\n'
-)
-md_lines.append('---\n')
+    md_path = OUTPUT_DIR / MD_FILENAME_TEMPLATE.format(timestamp=timestamp)
+    md_path.parent.mkdir(parents=True, exist_ok=True)
+    with md_path.open('w', encoding='utf-8') as f:
+        f.write(md_text)
 
-for _, row in df.iterrows():
-    md_lines.append(f'## {row["file_path"]}')
-    md_lines.append(f'- **probability_of_customization**: {row["probability_of_customization"]:.1f}%')
-    note_txt = row['notes'] or '(no notable signals detected)'
-    md_lines.append(f'- **notes**: {note_txt}\n')
+    # displays dataframe to user
+    display_dataframe_to_user('Aeon diff customization assessment', df)
 
-md_text = '\n'.join(md_lines)
+    return 0
 
-md_path = OUTPUT_DIR / MD_FILENAME_TEMPLATE.format(timestamp=timestamp)
-md_path.parent.mkdir(parents=True, exist_ok=True)
-with md_path.open('w', encoding='utf-8') as f:
-    f.write(md_text)
 
-## displays dataframe to user
-display_dataframe_to_user('Aeon diff customization assessment', df)
-
-csv_path, md_path
+if __name__ == "__main__":
+    raise SystemExit(main())
