@@ -37,7 +37,7 @@ import pandas as pd
 
 ## constants
 DIFF_INPUT_PATH: pathlib.Path = pathlib.Path('../output_dir/diffed_files_combined/diff_all_real_data.json').resolve()
-OUTPUT_DIR: pathlib.Path = pathlib.Path('../output_dir').resolve()
+OUTPUT_DIR: pathlib.Path = pathlib.Path('../output_dir/diffed_reports').resolve()
 CSV_FILENAME_TEMPLATE: str = 'aeon_diff_customization_assessment_{timestamp}.csv'
 MD_FILENAME_TEMPLATE: str = 'aeon_diff_customization_assessment_{timestamp}.md'
 
