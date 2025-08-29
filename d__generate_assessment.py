@@ -35,9 +35,9 @@ from datetime import datetime
 import pandas as pd
 
 # %%
-# constants
-DIFF_INPUT_PATH = pathlib.Path('../output_dir/diffed_files_combined/diff_all_real_data.json')
-OUTPUT_DIR = pathlib.Path('../output_dir')
+## constants
+DIFF_INPUT_PATH = pathlib.Path('../output_dir/diffed_files_combined/diff_all_real_data.json').resolve()
+OUTPUT_DIR = pathlib.Path('../output_dir').resolve()
 CSV_FILENAME_TEMPLATE = 'aeon_diff_customization_assessment_{timestamp}.csv'
 MD_FILENAME_TEMPLATE = 'aeon_diff_customization_assessment_{timestamp}.md'
 
