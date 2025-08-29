@@ -219,7 +219,6 @@ def main() -> int:
     """
     Orchestrates generation of the customization assessment CSV and Markdown report.
     """
-    import json
 
     # load input json
     with DIFF_INPUT_PATH.open('r', encoding='utf-8') as f:
@@ -314,5 +313,5 @@ def main() -> int:
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     raise SystemExit(main())
