@@ -25,7 +25,6 @@ Usage:
 - `uv run ./d__generate_assessment.py`
 """
 
-# %%
 ## loads libs
 import json
 import pathlib
@@ -34,21 +33,18 @@ from datetime import datetime
 
 import pandas as pd
 
-# %%
 ## constants
 DIFF_INPUT_PATH = pathlib.Path('../output_dir/diffed_files_combined/diff_all_real_data.json').resolve()
 OUTPUT_DIR = pathlib.Path('../output_dir').resolve()
 CSV_FILENAME_TEMPLATE = 'aeon_diff_customization_assessment_{timestamp}.csv'
 MD_FILENAME_TEMPLATE = 'aeon_diff_customization_assessment_{timestamp}.md'
 
-# %%
 ## loads input json
 with DIFF_INPUT_PATH.open('r', encoding='utf-8') as f:
     diff_payload = json.load(f)
 
 files = diff_payload.get('files', [])
 
-# %%
 ## defines heuristics
 local_term_patterns = [
     r'\bBrown\b',
@@ -88,7 +84,6 @@ vendor_regexes = [re.compile(p, re.I) for p in vendor_signal_patterns]
 upgrade_regexes = [re.compile(p, re.I) for p in upgrade_specific_patterns]
 
 
-# %%
 ## helpers
 def iter_changed_lines(hunks):
     for h in hunks:
@@ -224,7 +219,6 @@ def display_dataframe_to_user(title: str, df: pd.DataFrame, max_rows: int = 50) 
             print(df)
 
 
-# %%
 ## processes files
 rows = []
 for f in files:
@@ -266,14 +260,12 @@ df = (
     .reset_index(drop=True)
 )
 
-# %%
 ## saves csv
 timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
 csv_path = OUTPUT_DIR / CSV_FILENAME_TEMPLATE.format(timestamp=timestamp)
 csv_path.parent.mkdir(parents=True, exist_ok=True)
 df.to_csv(csv_path, index=False)
 
-# %%
 ## builds markdown report
 md_lines = []
 md_lines.append('# Aeon diff: customization likelihood report\n')
@@ -298,7 +290,6 @@ md_path.parent.mkdir(parents=True, exist_ok=True)
 with md_path.open('w', encoding='utf-8') as f:
     f.write(md_text)
 
-# %%
 ## displays dataframe to user
 display_dataframe_to_user('Aeon diff customization assessment', df)
 
